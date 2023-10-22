@@ -1,0 +1,235 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+
+
+namespace ProductManagement
+{
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString { get; } = "User ID=sa;password=examlyMssql@123; server=localhost;Database=ProductDB;trusted_connection=false;Persist Security Info=False;Encrypt=False";
+    }
+
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            string connectionString = ConnectionStringProvider.ConnectionString;
+            // Write your main method here...
+            
+
+
+             try{
+
+       
+             SqlConnection connection = new SqlConnection(connectionString);
+         //    connection.Open();
+
+             Console.WriteLine("Connection successful!\nSelect an option:\n1. Add product\n2.Display all products\n3. Delete product\n4. Search product\n5. Edit product");
+             int choice = Convert.ToInt32(Console.ReadLine());
+
+             switch(choice){
+                case 1:
+                AddProduct(connection);
+                break;
+                case 2:
+                DisplayAllProducts(connection);
+                break;
+                case 3:
+                DeleteProduct(connection);
+                break;
+                case 4:
+                SearchProduct(connection);
+                break;
+                case 5:
+                EditProduct(connection);
+                break;
+                default:
+                Console.WriteLine("Invalid option selected!");
+                break;
+             }
+
+          //   connection.Close();
+
+
+
+             }catch(Exception ex)
+             {
+                Console.WriteLine(ex.Message);
+             }
+              
+
+
+    
+
+
+
+        }
+
+
+      
+
+        public static void AddProduct(SqlConnection connection)
+        {
+            // Session 1
+            // Write your logic to add product
+            
+            SqlCommand command = null;
+            try{
+              connection.Open();
+                Console.WriteLine("Enter product details:");
+            Console.Write("Name:");
+            string name = Console.ReadLine();
+            Console.Write("Rate: ");
+            int rate = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Stock: ");
+            int stock = Convert.ToInt32(Console.ReadLine());
+            
+            string cmdtxt = "INSERT INTO Products VALUES (1,@name,@rate,@stock)";
+             command = new SqlCommand(cmdtxt,connection);
+
+            //command.Parameters.AddWithValue("@id",id);
+            command.Parameters.AddWithValue("@name",name);
+            command.Parameters.AddWithValue("@rate",rate);
+            command.Parameters.AddWithValue("@stock",stock);
+            command.ExecuteNonQuery();
+             Console.WriteLine("Product added successfully!");     
+             connection.Close();
+            }catch(Exception ex)
+           {
+                Console.WriteLine("Failed to connect to the database. Error message: "+ex.Message);
+           }
+        }
+
+        public static void DisplayAllProducts(SqlConnection connection)
+        {
+            // Session 2
+            // Write Your Logic to Display all products
+            SqlCommand command = null;
+            try{
+             string cmdtext = "select * from products";
+            connection.Open();
+            command = new SqlCommand(cmdtext,connection);
+            SqlDataReader reader = command.ExecuteReader();
+
+            while(reader.Read())
+            {
+                Console.WriteLine($"{reader["ID"]}-----{reader["Name"]} ----- {reader["Rate"]} --- {reader["Stock"]}");
+            }
+
+                connection.Close();
+
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+
+        }
+
+        public static void DeleteProduct(SqlConnection connection)
+        {
+            // Session 2
+            // Write your Logic to Delete Product by using ID
+             SqlCommand command = null;
+
+            try{
+                connection.Open();
+
+                Console.Write("Enter the ProductID to delete: ");
+                string id = Console.ReadLine();
+
+                 string deleteQuery = $"DELETE FROM Products WHERE ID = {id}";
+                
+                command = new SqlCommand(deleteQuery,connection);
+                command.ExecuteNonQuery();
+                Console.WriteLine("Product deleted sucessfully!");
+                   connection.Close();
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+
+
+           
+
+        }
+
+        public static void SearchProduct(SqlConnection connection)
+        {
+            // Session 3
+            // Write your logic to Search Product by Name
+            
+           
+            SqlCommand command = null;
+          
+            try{
+
+
+                 string cmdtxt = "SELECT * FROM Products WHERE Name=@name";
+
+                  connection.Open();
+                   
+                 command = new SqlCommand(cmdtxt,connection); 
+                 Console.Write("Enter the product name to search: ");
+                 string name = Console.ReadLine();
+               
+                 command.Parameters.AddWithValue("@name",name);
+
+                   
+                
+                 SqlDataReader reader = command.ExecuteReader();
+                 Console.WriteLine("ProductID\tName\tRate\tStock");
+
+                   while(reader.Read())
+            {
+                //Console.WriteLine($"{reader["ID"]} \t\t {reader["Name"]} \t\t {reader["Rate"]} \t\t  {reader["Stock"]}");
+                Console.WriteLine(reader["ID"]+"\t"+reader["Name"]+"\t"+reader["Rate"]+"\t"+reader["Stock"]);
+            }
+
+                connection.Close();
+
+
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+        public static void EditProduct(SqlConnection connection)
+        {
+            // Session 3
+            // Write your logic to Edit Product by ID
+
+            try{
+                connection.Open();
+                SqlCommand command = null;
+                
+
+                Console.Write("Enter the ProductID to edit: ");
+                
+                 Console.Write("Enter the new product details: ");
+                 string id = Console.ReadLine();
+                 Console.Write("Name: ");
+                 string name = Console.ReadLine();
+                  Console.Write("Rate: ");
+                 int rate = Convert.ToInt32(Console.ReadLine());
+                  Console.Write("Stock: ");
+                 int stock = Convert.ToInt32(Console.ReadLine());
+
+                string updateQuery = $"UPDATE Products SET Name='{name}',Rate={rate},Stock={stock} WHERE ID={id}";
+                
+                command = new SqlCommand(updateQuery,connection);
+                command.ExecuteNonQuery();
+                   Console.WriteLine("Product updated sucessfully!");
+                connection.Close();
+
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+}
